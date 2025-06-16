@@ -416,6 +416,155 @@
       color: white;
     }
 
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(2px);
+    }
+
+    .modal-content {
+      background-color: var(--surface-color);
+      margin: 2% auto;
+      padding: var(--spacing-lg);
+      border-radius: var(--border-radius);
+      width: 95%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-lg);
+      padding-bottom: var(--spacing-sm);
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      color: var(--primary-color);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 2rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      background-color: var(--error-color);
+      color: white;
+    }
+
+    .letter-preview {
+      background: var(--background-color);
+      padding: var(--spacing-lg);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border-color);
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      max-height: 400px;
+      overflow-y: auto;
+      margin: var(--spacing-md) 0;
+    }
+
+    .recipients-section {
+      margin: var(--spacing-lg) 0;
+    }
+
+    .recipients-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-sm);
+    }
+
+    .recipient-card {
+      background: var(--surface-color);
+      padding: var(--spacing-sm);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border-color);
+      font-size: 0.9rem;
+    }
+
+    .recipient-category {
+      font-weight: 600;
+      color: var(--accent-color);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .recipient-name {
+      font-weight: 500;
+      color: var(--text-color);
+    }
+
+    .recipient-org {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .recipient-email {
+      color: var(--accent-color);
+      font-family: monospace;
+      font-size: 0.8rem;
+      word-break: break-all;
+    }
+
+    .edit-section {
+      margin: var(--spacing-lg) 0;
+    }
+
+    .edit-textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: var(--spacing-sm);
+      border: 2px solid var(--border-color);
+      border-radius: var(--border-radius);
+      font-family: inherit;
+      font-size: 1rem;
+      resize: vertical;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: var(--spacing-sm);
+      justify-content: flex-end;
+      margin-top: var(--spacing-lg);
+      padding-top: var(--spacing-sm);
+      border-top: 1px solid var(--border-color);
+      flex-wrap: wrap;
+    }
+
+    .btn-preview {
+      background-color: var(--accent-color);
+      color: white;
+    }
+
+    .btn-preview:hover:not(:disabled) {
+      background-color: #2980b9;
+    }
+
     @media (max-width: 768px) {
       .container {
         padding: var(--spacing-sm);
@@ -425,6 +574,20 @@
         position: static;
         justify-content: center;
         margin-bottom: var(--spacing-lg);
+      }
+
+      .modal-content {
+        margin: 5% auto;
+        width: 98%;
+        padding: var(--spacing-md);
+      }
+
+      .recipients-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-actions {
+        justify-content: center;
       }
     }
   </style>
@@ -479,6 +642,7 @@
                 <option value="education">Educational Discrimination</option>
                 <option value="healthcare">Healthcare Discrimination</option>
                 <option value="voting_rights">Voting Rights Violation</option>
+                <option value="huntington_beach_navigation">Huntington Beach Navigation Center</option>
                 <option value="other">Other Civil Rights Issue</option>
               </select>
             </div>
@@ -532,6 +696,10 @@
                   <input type="checkbox" id="contact-legal" name="contactTypes" value="legal_aid">
                   <label for="contact-legal">Legal Aid</label>
                 </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="contact-mercy" name="contactTypes" value="mercy_house">
+                  <label for="contact-mercy">Mercy House</label>
+                </div>
               </div>
             </fieldset>
             <div class="contact-preview" id="contactPreview" aria-live="polite"></div>
@@ -559,15 +727,68 @@
             </button>
           </div>
 
-          <button type="submit" class="btn btn-primary" id="submitBtn">
-            <span id="submitText">📧 Send Report</span>
-            <span class="loading-spinner" id="loadingSpinner" style="display: none;"></span>
+          <button type="button" class="btn btn-preview" id="previewBtn">
+            <span id="previewText">🔍 Preview Demand Letter</span>
+            <span class="loading-spinner" id="previewSpinner" style="display: none;"></span>
           </button>
         </form>
       </div>
 
       <div id="responseMessage" role="alert" aria-live="assertive" aria-atomic="true"></div>
     </main>
+  </div>
+
+  <!-- Preview Modal -->
+  <div id="previewModal" class="modal" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">📋 Preview Your Demand Letter</h2>
+        <button class="close-btn" id="closeModal" aria-label="Close preview modal">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <strong>📋 Review Your Letter:</strong> Please review the AI-generated demand letter below. You can add additional information and have it rewritten if needed.
+        </div>
+
+        <div class="letter-preview" id="letterContent" role="region" aria-label="Generated demand letter">
+          <!-- Generated letter content will appear here -->
+        </div>
+
+        <div class="edit-section">
+          <label for="additionalInfo">💡 Add Additional Information (Optional):</label>
+          <textarea id="additionalInfo" class="edit-textarea" 
+                    placeholder="Add any additional details, corrections, or information you want included in the letter..."
+                    aria-describedby="edit-help"></textarea>
+          <div id="edit-help" class="sr-only">Any additional information you provide will be incorporated into a rewritten version of the letter</div>
+          
+          <button type="button" class="btn btn-secondary" id="rewriteBtn">
+            <span id="rewriteText">✏️ Rewrite with Additional Info</span>
+            <span class="loading-spinner" id="rewriteSpinner" style="display: none;"></span>
+          </button>
+        </div>
+
+        <div class="recipients-section">
+          <h3>📧 This letter will be sent to:</h3>
+          <div id="recipientsList" class="recipients-grid">
+            <!-- Recipient cards will appear here -->
+          </div>
+          <div id="recipientSummary" class="alert alert-success" style="margin-top: 1rem;">
+            <!-- Summary will appear here -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="backToEditBtn">
+          ← Back to Edit
+        </button>
+        <button type="button" class="btn btn-primary" id="finalSendBtn">
+          <span id="sendText">📧 Send Demand Letter</span>
+          <span class="loading-spinner" id="sendSpinner" style="display: none;"></span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -608,7 +829,6 @@
       }
 
       bindEvents() {
-        this.form.addEventListener('submit', this.handleSubmit.bind(this));
         this.form.addEventListener('input', this.handleInput.bind(this));
         this.form.addEventListener('change', this.handleChange.bind(this));
         
@@ -618,6 +838,20 @@
         
         document.getElementById('highContrastBtn').addEventListener('click', this.toggleHighContrast.bind(this));
         document.getElementById('fontSizeBtn').addEventListener('click', this.increaseFontSize.bind(this));
+        
+        // Preview functionality
+        document.getElementById('previewBtn').addEventListener('click', this.showPreview.bind(this));
+        document.getElementById('closeModal').addEventListener('click', this.closeModal.bind(this));
+        document.getElementById('backToEditBtn').addEventListener('click', this.closeModal.bind(this));
+        document.getElementById('rewriteBtn').addEventListener('click', this.rewriteLetter.bind(this));
+        document.getElementById('finalSendBtn').addEventListener('click', this.sendEmail.bind(this));
+        
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && document.getElementById('previewModal').style.display === 'block') {
+            this.closeModal();
+          }
+        });
         
         // Auto-save draft every 30 seconds
         setInterval(() => this.saveDraft(true), 30000);
@@ -890,6 +1124,211 @@
         const newSize = Math.min(currentSize + 2, 24);
         document.documentElement.style.fontSize = newSize + 'px';
         localStorage.setItem('fontSize', newSize);
+      }
+
+      async showPreview() {
+        const formData = this.getFormData();
+        if (!this.validateForm(formData)) return;
+
+        const previewBtn = document.getElementById('previewBtn');
+        const previewText = document.getElementById('previewText');
+        const previewSpinner = document.getElementById('previewSpinner');
+
+        // Show loading state
+        previewBtn.disabled = true;
+        previewText.style.display = 'none';
+        previewSpinner.style.display = 'inline-block';
+
+        try {
+          const response = await fetch('/api/preview', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': this.csrfToken
+            },
+            body: JSON.stringify(formData),
+            credentials: 'same-origin'
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            this.displayPreview(data);
+          } else {
+            this.showMessage(`❌ Error generating preview: ${data.error}`, 'error');
+          }
+        } catch (error) {
+          console.error('Preview error:', error);
+          this.showMessage('❌ Network error while generating preview.', 'error');
+        } finally {
+          // Reset button state
+          previewBtn.disabled = false;
+          previewText.style.display = 'inline';
+          previewSpinner.style.display = 'none';
+        }
+      }
+
+      displayPreview(data) {
+        // Store preview data for sending
+        this.previewData = data;
+
+        // Display the letter content
+        document.getElementById('letterContent').textContent = data.letter;
+
+        // Display recipients
+        this.displayRecipients(data.recipients);
+
+        // Show recipient summary
+        const summary = document.getElementById('recipientSummary');
+        summary.innerHTML = `<strong>📊 Total Recipients: ${data.totalRecipients}</strong>`;
+
+        // Show the modal
+        const modal = document.getElementById('previewModal');
+        modal.style.display = 'block';
+        modal.setAttribute('aria-hidden', 'false');
+        
+        // Focus the close button for accessibility
+        document.getElementById('closeModal').focus();
+      }
+
+      displayRecipients(recipients) {
+        const recipientsList = document.getElementById('recipientsList');
+        recipientsList.innerHTML = '';
+
+        recipients.forEach(recipient => {
+          const card = document.createElement('div');
+          card.className = 'recipient-card';
+          card.innerHTML = `
+            <div class="recipient-category">${recipient.category}</div>
+            <div class="recipient-name">${recipient.name}</div>
+            <div class="recipient-org">${recipient.organization}</div>
+            <div class="recipient-email">${recipient.email}</div>
+          `;
+          recipientsList.appendChild(card);
+        });
+      }
+
+      async rewriteLetter() {
+        const additionalInfo = document.getElementById('additionalInfo').value;
+        const rewriteBtn = document.getElementById('rewriteBtn');
+        const rewriteText = document.getElementById('rewriteText');
+        const rewriteSpinner = document.getElementById('rewriteSpinner');
+
+        if (!this.previewData) {
+          this.showMessage('❌ No letter to rewrite', 'error');
+          return;
+        }
+
+        // Show loading state
+        rewriteBtn.disabled = true;
+        rewriteText.style.display = 'none';
+        rewriteSpinner.style.display = 'inline-block';
+
+        try {
+          const response = await fetch('/api/rewrite', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': this.csrfToken
+            },
+            body: JSON.stringify({
+              originalLetter: this.previewData.letter,
+              additionalInfo: additionalInfo,
+              violationType: this.previewData.violationType,
+              urgency: this.previewData.urgency
+            }),
+            credentials: 'same-origin'
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            // Update the preview with the rewritten letter
+            this.previewData.letter = data.rewrittenLetter;
+            document.getElementById('letterContent').textContent = data.rewrittenLetter;
+            this.showMessage('✅ Letter rewritten successfully!', 'success');
+          } else {
+            this.showMessage(`❌ Error rewriting letter: ${data.error}`, 'error');
+          }
+        } catch (error) {
+          console.error('Rewrite error:', error);
+          this.showMessage('❌ Network error while rewriting letter.', 'error');
+        } finally {
+          // Reset button state
+          rewriteBtn.disabled = false;
+          rewriteText.style.display = 'inline';
+          rewriteSpinner.style.display = 'none';
+        }
+      }
+
+      async sendEmail() {
+        if (!this.previewData) {
+          this.showMessage('❌ No letter to send', 'error');
+          return;
+        }
+
+        if (!confirm('Are you sure you want to send this demand letter to all selected recipients?')) {
+          return;
+        }
+
+        const sendBtn = document.getElementById('finalSendBtn');
+        const sendText = document.getElementById('sendText');
+        const sendSpinner = document.getElementById('sendSpinner');
+
+        // Show loading state
+        sendBtn.disabled = true;
+        sendText.style.display = 'none';
+        sendSpinner.style.display = 'inline-block';
+
+        try {
+          const formData = this.getFormData();
+          const response = await fetch('/api/send-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': this.csrfToken
+            },
+            body: JSON.stringify(formData),
+            credentials: 'same-origin'
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            this.showMessage(
+              `✅ Your demand letter has been sent successfully to ${data.recipientCount} recipients!`,
+              'success'
+            );
+            this.closeModal();
+            this.form.reset();
+            this.clearDraft();
+            this.updateProgress();
+            this.updateCharCounter();
+            this.updateContactPreview();
+          } else {
+            this.showMessage(`❌ Error sending email: ${data.error}`, 'error');
+          }
+        } catch (error) {
+          console.error('Send error:', error);
+          this.showMessage('❌ Network error while sending email.', 'error');
+        } finally {
+          // Reset button state
+          sendBtn.disabled = false;
+          sendText.style.display = 'inline';
+          sendSpinner.style.display = 'none';
+        }
+      }
+
+      closeModal() {
+        const modal = document.getElementById('previewModal');
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        
+        // Clear additional info
+        document.getElementById('additionalInfo').value = '';
+        
+        // Focus back to preview button
+        document.getElementById('previewBtn').focus();
       }
     }
 
