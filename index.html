@@ -36,11 +36,48 @@
   <p>
     Accessible tool for the disabled and advocates to urgently contact authorities about abuse, unsafe conditions, and civil rights violations.
   </p>
-  <button id="contactBtn" aria-label="Contact Authorities">Contact Authorities</button>
+  <h2>Contact Authorities</h2>
+  <form id="contactForm" aria-label="Contact Authorities Form">
+    <label for="email">Your Email:</label><br />
+    <input type="email" id="email" name="email" required aria-required="true" /><br /><br />
+    <label for="description">Describe the abuse or violation:</label><br />
+    <textarea id="description" name="description" rows="6" cols="50" required aria-required="true"></textarea><br /><br />
+    <button type="submit">Send</button>
+  </form>
+
+  <div id="responseMessage" role="alert" aria-live="polite" style="margin-top: 1rem; color: green;"></div>
 
   <script>
-    document.getElementById('contactBtn').addEventListener('click', () => {
-      alert('This would open the contact form or send an email.');
+    const form = document.getElementById('contactForm');
+    const responseMessage = document.getElementById('responseMessage');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      responseMessage.textContent = 'Sending...';
+
+      const email = document.getElementById('email').value;
+      const description = document.getElementById('description').value;
+
+      try {
+        const response = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, description }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          responseMessage.textContent = 'Your message has been sent successfully.';
+          form.reset();
+        } else {
+          responseMessage.textContent = 'Error: ' + (data.error || 'Failed to send message.');
+        }
+      } catch (error) {
+        responseMessage.textContent = 'Error: ' + error.message;
+      }
     });
   </script>
 </body>
