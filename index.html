@@ -1,82 +1,910 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Civil Rights Activist Emailer</title>
+  <meta name="description" content="Accessible tool for reporting civil rights violations and contacting authorities" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>" />
   <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #e74c3c;
+      --accent-color: #3498db;
+      --success-color: #27ae60;
+      --warning-color: #f39c12;
+      --error-color: #e74c3c;
+      --background-color: #f8f9fa;
+      --surface-color: #ffffff;
+      --text-color: #2c3e50;
+      --text-muted: #6c757d;
+      --border-color: #dee2e6;
+      --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      --border-radius: 8px;
+      --spacing-xs: 0.5rem;
+      --spacing-sm: 1rem;
+      --spacing-md: 1.5rem;
+      --spacing-lg: 2rem;
+      --spacing-xl: 3rem;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background-color: #1a1a1a;
+        --surface-color: #2d2d2d;
+        --text-color: #ffffff;
+        --text-muted: #b0b0b0;
+        --border-color: #404040;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      margin: 2rem;
-      background-color: #f9f9f9;
-      color: #333;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: var(--spacing-sm);
+      background-color: var(--background-color);
+      color: var(--text-color);
+      min-height: 100vh;
     }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: var(--spacing-lg);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: var(--spacing-xl);
+    }
+
     h1 {
-      color: #2c3e50;
+      color: var(--primary-color);
+      margin: 0 0 var(--spacing-sm) 0;
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
+      font-weight: 700;
     }
-    button {
-      background-color: #e74c3c;
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .card {
+      background: var(--surface-color);
+      border-radius: var(--border-radius);
+      padding: var(--spacing-lg);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .form-group {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-sm);
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    label {
+      display: block;
+      margin-bottom: var(--spacing-xs);
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .required::after {
+      content: ' *';
+      color: var(--error-color);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: var(--spacing-sm);
+      border: 2px solid var(--border-color);
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      font-family: inherit;
+      background-color: var(--surface-color);
+      color: var(--text-color);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+
+    input:invalid, textarea:invalid, select:invalid {
+      border-color: var(--error-color);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-xs);
+      margin-top: var(--spacing-xs);
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      padding: var(--spacing-xs);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border-color);
+      background: var(--surface-color);
+      transition: background-color 0.2s;
+    }
+
+    .checkbox-item:hover {
+      background-color: var(--background-color);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      width: auto;
+      margin-right: var(--spacing-xs);
+    }
+
+    .urgency-selector {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: var(--spacing-xs);
+      margin-top: var(--spacing-xs);
+    }
+
+    .urgency-option {
+      position: relative;
+    }
+
+    .urgency-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .urgency-label {
+      display: block;
+      padding: var(--spacing-sm);
+      text-align: center;
+      border: 2px solid var(--border-color);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+    }
+
+    .urgency-option input:checked + .urgency-label {
+      border-color: var(--accent-color);
+      background-color: var(--accent-color);
       color: white;
+    }
+
+    .urgency-option input:focus + .urgency-label {
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+
+    .urgency-critical .urgency-label { border-color: var(--error-color); }
+    .urgency-critical input:checked + .urgency-label { background-color: var(--error-color); }
+    .urgency-high .urgency-label { border-color: var(--warning-color); }
+    .urgency-high input:checked + .urgency-label { background-color: var(--warning-color); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-sm) var(--spacing-lg);
       border: none;
-      padding: 1rem 2rem;
+      border-radius: var(--border-radius);
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      min-height: 48px;
+      gap: var(--spacing-xs);
+    }
+
+    .btn:focus {
+      outline: 3px solid var(--accent-color);
+      outline-offset: 2px;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background-color: var(--secondary-color);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: #c0392b;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background-color: var(--accent-color);
+      color: white;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background-color: #2980b9;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .alert {
+      padding: var(--spacing-sm);
+      border-radius: var(--border-radius);
+      margin: var(--spacing-sm) 0;
+      border-left: 4px solid;
+    }
+
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+      border-color: var(--success-color);
+    }
+
+    .alert-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border-color: var(--error-color);
+    }
+
+    .alert-warning {
+      background-color: #fff3cd;
+      color: #856404;
+      border-color: var(--warning-color);
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background-color: var(--border-color);
+      border-radius: 2px;
+      overflow: hidden;
+      margin: var(--spacing-sm) 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: var(--accent-color);
+      transition: width 0.3s ease;
+    }
+
+    .draft-controls {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-sm);
+      flex-wrap: wrap;
+    }
+
+    .char-counter {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      text-align: right;
+      margin-top: var(--spacing-xs);
+    }
+
+    .char-counter.warning {
+      color: var(--warning-color);
+    }
+
+    .char-counter.error {
+      color: var(--error-color);
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 6px;
+      background: var(--accent-color);
+      color: white;
+      padding: 8px;
+      text-decoration: none;
+      border-radius: 4px;
+      z-index: 1000;
+    }
+
+    .skip-link:focus {
+      top: 6px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .high-contrast {
+      --background-color: #000000;
+      --surface-color: #ffffff;
+      --text-color: #000000;
+      --primary-color: #000000;
+      --accent-color: #0000ff;
+      --error-color: #ff0000;
+      --border-color: #000000;
+    }
+
+    .contact-preview {
+      background: var(--background-color);
+      padding: var(--spacing-sm);
+      border-radius: var(--border-radius);
+      margin-top: var(--spacing-sm);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .accessibility-controls {
+      position: fixed;
+      top: var(--spacing-sm);
+      right: var(--spacing-sm);
+      z-index: 1000;
+      display: flex;
+      gap: var(--spacing-xs);
+    }
+
+    .accessibility-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--accent-color);
+      background: var(--surface-color);
+      color: var(--accent-color);
       font-size: 1.2rem;
       cursor: pointer;
-      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    button:focus {
-      outline: 3px solid #2980b9;
-      outline-offset: 2px;
+
+    .accessibility-btn:hover {
+      background: var(--accent-color);
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: var(--spacing-sm);
+      }
+      
+      .accessibility-controls {
+        position: static;
+        justify-content: center;
+        margin-bottom: var(--spacing-lg);
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Civil Rights Activist Emailer</h1>
-  <p>
-    Accessible tool for the disabled and advocates to urgently contact authorities about abuse, unsafe conditions, and civil rights violations.
-  </p>
-  <h2>Contact Authorities</h2>
-  <form id="contactForm" aria-label="Contact Authorities Form">
-    <label for="email">Your Email:</label><br />
-    <input type="email" id="email" name="email" required aria-required="true" /><br /><br />
-    <label for="description">Describe the abuse or violation:</label><br />
-    <textarea id="description" name="description" rows="6" cols="50" required aria-required="true"></textarea><br /><br />
-    <button type="submit">Send</button>
-  </form>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  
+  <div class="accessibility-controls" role="toolbar" aria-label="Accessibility controls">
+    <button class="accessibility-btn" id="highContrastBtn" aria-label="Toggle high contrast mode" title="High Contrast">
+      ⚫
+    </button>
+    <button class="accessibility-btn" id="fontSizeBtn" aria-label="Increase font size" title="Increase Font Size">
+      A+
+    </button>
+  </div>
 
-  <div id="responseMessage" role="alert" aria-live="polite" style="margin-top: 1rem; color: green;"></div>
+  <div class="container">
+    <header class="header">
+      <h1>⚖️ Civil Rights Activist Emailer</h1>
+      <p class="subtitle">
+        Accessible tool for reporting civil rights violations and contacting authorities about abuse, unsafe conditions, and discrimination.
+      </p>
+    </header>
+
+    <main id="main-content">
+      <div class="card">
+        <h2>Report a Violation</h2>
+        <p>Your report will be professionally formatted and sent to the appropriate authorities. All fields marked with * are required.</p>
+        
+        <div class="progress-bar" role="progressbar" aria-label="Form completion progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <form id="contactForm" aria-label="Civil Rights Violation Report Form" novalidate>
+          <div class="form-group">
+            <label for="email" class="required">Your Email Address</label>
+            <input type="email" id="email" name="email" required aria-required="true" 
+                   aria-describedby="email-help" autocomplete="email" />
+            <div id="email-help" class="sr-only">We'll use this to send you a confirmation and for authorities to contact you</div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="violationType" class="required">Type of Violation</label>
+              <select id="violationType" name="violationType" required aria-required="true">
+                <option value="">Select violation type...</option>
+                <option value="discrimination">Discrimination</option>
+                <option value="accessibility">Accessibility/ADA Violation</option>
+                <option value="police_misconduct">Police Misconduct</option>
+                <option value="housing">Housing Discrimination</option>
+                <option value="employment">Employment Discrimination</option>
+                <option value="education">Educational Discrimination</option>
+                <option value="healthcare">Healthcare Discrimination</option>
+                <option value="voting_rights">Voting Rights Violation</option>
+                <option value="other">Other Civil Rights Issue</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <fieldset>
+                <legend class="required">Urgency Level</legend>
+                <div class="urgency-selector">
+                  <div class="urgency-option">
+                    <input type="radio" id="urgency-low" name="urgency" value="low">
+                    <label for="urgency-low" class="urgency-label">Low</label>
+                  </div>
+                  <div class="urgency-option">
+                    <input type="radio" id="urgency-medium" name="urgency" value="medium">
+                    <label for="urgency-medium" class="urgency-label">Medium</label>
+                  </div>
+                  <div class="urgency-option urgency-high">
+                    <input type="radio" id="urgency-high" name="urgency" value="high">
+                    <label for="urgency-high" class="urgency-label">High</label>
+                  </div>
+                  <div class="urgency-option urgency-critical">
+                    <input type="radio" id="urgency-critical" name="urgency" value="critical">
+                    <label for="urgency-critical" class="urgency-label">Critical</label>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <fieldset>
+              <legend class="required">Who to Contact</legend>
+              <div class="checkbox-group" id="contactTypesGroup">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="contact-local" name="contactTypes" value="local_authority">
+                  <label for="contact-local">Local Authorities</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="contact-federal" name="contactTypes" value="federal_agency">
+                  <label for="contact-federal">Federal Agencies</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="contact-activist" name="contactTypes" value="activist_group">
+                  <label for="contact-activist">Activist Groups</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="contact-media" name="contactTypes" value="media">
+                  <label for="contact-media">Media Outlets</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="contact-legal" name="contactTypes" value="legal_aid">
+                  <label for="contact-legal">Legal Aid</label>
+                </div>
+              </div>
+            </fieldset>
+            <div class="contact-preview" id="contactPreview" aria-live="polite"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="description" class="required">Describe the violation or incident</label>
+            <textarea id="description" name="description" rows="8" required aria-required="true" 
+                      aria-describedby="description-help char-counter" 
+                      placeholder="Please provide detailed information about what happened, when, where, and who was involved..."
+                      maxlength="2000"></textarea>
+            <div id="description-help" class="sr-only">Provide as much detail as possible. Your description will be professionally formatted before sending.</div>
+            <div class="char-counter" id="charCounter">0 / 2000 characters</div>
+          </div>
+
+          <div class="draft-controls">
+            <button type="button" class="btn btn-secondary" id="saveDraftBtn">
+              💾 Save Draft
+            </button>
+            <button type="button" class="btn btn-secondary" id="loadDraftBtn">
+              📄 Load Draft
+            </button>
+            <button type="button" class="btn btn-secondary" id="clearFormBtn">
+              🗑️ Clear Form
+            </button>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <span id="submitText">📧 Send Report</span>
+            <span class="loading-spinner" id="loadingSpinner" style="display: none;"></span>
+          </button>
+        </form>
+      </div>
+
+      <div id="responseMessage" role="alert" aria-live="assertive" aria-atomic="true"></div>
+    </main>
+  </div>
 
   <script>
-    const form = document.getElementById('contactForm');
-    const responseMessage = document.getElementById('responseMessage');
+    class CivilRightsForm {
+      constructor() {
+        this.form = document.getElementById('contactForm');
+        this.responseMessage = document.getElementById('responseMessage');
+        this.submitBtn = document.getElementById('submitBtn');
+        this.submitText = document.getElementById('submitText');
+        this.loadingSpinner = document.getElementById('loadingSpinner');
+        this.progressFill = document.getElementById('progressFill');
+        this.charCounter = document.getElementById('charCounter');
+        this.contactPreview = document.getElementById('contactPreview');
+        
+        this.csrfToken = null;
+        this.isSubmitting = false;
+        
+        this.init();
+      }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      responseMessage.textContent = 'Sending...';
+      async init() {
+        await this.fetchCsrfToken();
+        this.bindEvents();
+        this.loadDraft();
+        this.updateProgress();
+        this.updateCharCounter();
+        this.updateContactPreview();
+      }
 
-      const email = document.getElementById('email').value;
-      const description = document.getElementById('description').value;
-
-      try {
-        const response = await fetch('/api/send-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, description }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          responseMessage.textContent = 'Your message has been sent successfully.';
-          form.reset();
-        } else {
-          responseMessage.textContent = 'Error: ' + (data.error || 'Failed to send message.');
+      async fetchCsrfToken() {
+        try {
+          const response = await fetch('/api/csrf-token');
+          const data = await response.json();
+          this.csrfToken = data.csrfToken;
+        } catch (error) {
+          console.error('Failed to fetch CSRF token:', error);
         }
-      } catch (error) {
-        responseMessage.textContent = 'Error: ' + error.message;
+      }
+
+      bindEvents() {
+        this.form.addEventListener('submit', this.handleSubmit.bind(this));
+        this.form.addEventListener('input', this.handleInput.bind(this));
+        this.form.addEventListener('change', this.handleChange.bind(this));
+        
+        document.getElementById('saveDraftBtn').addEventListener('click', this.saveDraft.bind(this));
+        document.getElementById('loadDraftBtn').addEventListener('click', this.loadDraft.bind(this));
+        document.getElementById('clearFormBtn').addEventListener('click', this.clearForm.bind(this));
+        
+        document.getElementById('highContrastBtn').addEventListener('click', this.toggleHighContrast.bind(this));
+        document.getElementById('fontSizeBtn').addEventListener('click', this.increaseFontSize.bind(this));
+        
+        // Auto-save draft every 30 seconds
+        setInterval(() => this.saveDraft(true), 30000);
+      }
+
+      handleInput(e) {
+        if (e.target.id === 'description') {
+          this.updateCharCounter();
+        }
+        this.updateProgress();
+      }
+
+      handleChange(e) {
+        if (e.target.name === 'contactTypes') {
+          this.updateContactPreview();
+        }
+        this.updateProgress();
+      }
+
+      updateCharCounter() {
+        const description = document.getElementById('description');
+        const count = description.value.length;
+        const max = 2000;
+        
+        this.charCounter.textContent = `${count} / ${max} characters`;
+        
+        if (count > max * 0.9) {
+          this.charCounter.className = 'char-counter error';
+        } else if (count > max * 0.75) {
+          this.charCounter.className = 'char-counter warning';
+        } else {
+          this.charCounter.className = 'char-counter';
+        }
+      }
+
+      updateProgress() {
+        const fields = ['email', 'violationType', 'urgency', 'description'];
+        const contactTypes = document.querySelectorAll('input[name="contactTypes"]:checked');
+        
+        let completed = 0;
+        const total = fields.length + 1; // +1 for contact types
+        
+        fields.forEach(fieldId => {
+          const field = document.getElementById(fieldId);
+          if (field && field.value.trim()) completed++;
+        });
+        
+        if (contactTypes.length > 0) completed++;
+        
+        const progress = (completed / total) * 100;
+        this.progressFill.style.width = `${progress}%`;
+        document.querySelector('.progress-bar').setAttribute('aria-valuenow', progress);
+      }
+
+      async updateContactPreview() {
+        const selected = Array.from(document.querySelectorAll('input[name="contactTypes"]:checked'))
+          .map(cb => cb.value);
+        
+        if (selected.length === 0) {
+          this.contactPreview.textContent = 'Select at least one contact type to see recipient preview.';
+          return;
+        }
+        
+        try {
+          const response = await fetch('/api/contacts');
+          const contacts = await response.json();
+          
+          const selectedContacts = contacts.filter(c => selected.includes(c.id));
+          const totalRecipients = selectedContacts.reduce((sum, c) => sum + c.count, 0);
+          
+          this.contactPreview.innerHTML = `
+            <strong>Your report will be sent to ${totalRecipients} recipients:</strong><br>
+            ${selectedContacts.map(c => `• ${c.name} (${c.count} contacts)`).join('<br>')}
+          `;
+        } catch (error) {
+          this.contactPreview.textContent = 'Unable to load contact preview.';
+        }
+      }
+
+      async handleSubmit(e) {
+        e.preventDefault();
+        
+        if (this.isSubmitting) return;
+        
+        const formData = this.getFormData();
+        if (!this.validateForm(formData)) return;
+        
+        this.setSubmitting(true);
+        
+        try {
+          const response = await fetch('/api/send-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': this.csrfToken
+            },
+            body: JSON.stringify(formData),
+            credentials: 'same-origin'
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok) {
+            this.showMessage(
+              `✅ Your report has been sent successfully to ${data.recipientCount} recipients. Message ID: ${data.messageId}`,
+              'success'
+            );
+            this.form.reset();
+            this.clearDraft();
+            this.updateProgress();
+            this.updateCharCounter();
+            this.updateContactPreview();
+          } else {
+            this.showMessage(
+              `❌ Error: ${data.error}${data.details ? '<br>• ' + data.details.join('<br>• ') : ''}`,
+              'error'
+            );
+          }
+        } catch (error) {
+          console.error('Submission error:', error);
+          this.showMessage('❌ Network error. Please check your connection and try again.', 'error');
+        } finally {
+          this.setSubmitting(false);
+        }
+      }
+
+      getFormData() {
+        const formData = new FormData(this.form);
+        const data = {};
+        
+        for (let [key, value] of formData.entries()) {
+          if (key === 'contactTypes') {
+            if (!data.contactTypes) data.contactTypes = [];
+            data.contactTypes.push(value);
+          } else {
+            data[key] = value;
+          }
+        }
+        
+        return data;
+      }
+
+      validateForm(data) {
+        const errors = [];
+        
+        if (!data.email || !data.email.includes('@')) {
+          errors.push('Valid email address is required');
+        }
+        
+        if (!data.violationType) {
+          errors.push('Please select a violation type');
+        }
+        
+        if (!data.urgency) {
+          errors.push('Please select an urgency level');
+        }
+        
+        if (!data.contactTypes || data.contactTypes.length === 0) {
+          errors.push('Please select at least one contact type');
+        }
+        
+        if (!data.description || data.description.trim().length < 10) {
+          errors.push('Description must be at least 10 characters long');
+        }
+        
+        if (errors.length > 0) {
+          this.showMessage('❌ Please fix the following errors:<br>• ' + errors.join('<br>• '), 'error');
+          return false;
+        }
+        
+        return true;
+      }
+
+      setSubmitting(isSubmitting) {
+        this.isSubmitting = isSubmitting;
+        this.submitBtn.disabled = isSubmitting;
+        
+        if (isSubmitting) {
+          this.submitText.style.display = 'none';
+          this.loadingSpinner.style.display = 'inline-block';
+          this.showMessage('📤 Sending your report...', 'warning');
+        } else {
+          this.submitText.style.display = 'inline';
+          this.loadingSpinner.style.display = 'none';
+        }
+      }
+
+      showMessage(message, type) {
+        this.responseMessage.innerHTML = message;
+        this.responseMessage.className = `alert alert-${type}`;
+        this.responseMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+        // Clear success messages after 10 seconds
+        if (type === 'success') {
+          setTimeout(() => {
+            this.responseMessage.innerHTML = '';
+            this.responseMessage.className = '';
+          }, 10000);
+        }
+      }
+
+      saveDraft(silent = false) {
+        try {
+          const data = this.getFormData();
+          localStorage.setItem('civilRightsDraft', JSON.stringify(data));
+          if (!silent) {
+            this.showMessage('💾 Draft saved successfully!', 'success');
+          }
+        } catch (error) {
+          if (!silent) {
+            this.showMessage('⚠️ Unable to save draft', 'warning');
+          }
+        }
+      }
+
+      loadDraft() {
+        try {
+          const saved = localStorage.getItem('civilRightsDraft');
+          if (!saved) return;
+          
+          const data = JSON.parse(saved);
+          
+          // Load text inputs
+          ['email', 'violationType', 'urgency', 'description'].forEach(field => {
+            const element = document.getElementById(field);
+            if (element && data[field]) {
+              element.value = data[field];
+            }
+          });
+          
+          // Load checkboxes
+          if (data.contactTypes) {
+            data.contactTypes.forEach(type => {
+              const checkbox = document.querySelector(`input[name="contactTypes"][value="${type}"]`);
+              if (checkbox) checkbox.checked = true;
+            });
+          }
+          
+          this.updateProgress();
+          this.updateCharCounter();
+          this.updateContactPreview();
+        } catch (error) {
+          console.error('Error loading draft:', error);
+        }
+      }
+
+      clearForm() {
+        if (confirm('Are you sure you want to clear all form data?')) {
+          this.form.reset();
+          this.clearDraft();
+          this.updateProgress();
+          this.updateCharCounter();
+          this.updateContactPreview();
+          this.showMessage('🗑️ Form cleared', 'success');
+        }
+      }
+
+      clearDraft() {
+        localStorage.removeItem('civilRightsDraft');
+      }
+
+      toggleHighContrast() {
+        document.body.classList.toggle('high-contrast');
+        const isActive = document.body.classList.contains('high-contrast');
+        localStorage.setItem('highContrast', isActive);
+      }
+
+      increaseFontSize() {
+        const currentSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const newSize = Math.min(currentSize + 2, 24);
+        document.documentElement.style.fontSize = newSize + 'px';
+        localStorage.setItem('fontSize', newSize);
+      }
+    }
+
+    // Initialize the form when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      new CivilRightsForm();
+      
+      // Restore accessibility preferences
+      if (localStorage.getItem('highContrast') === 'true') {
+        document.body.classList.add('high-contrast');
+      }
+      
+      const savedFontSize = localStorage.getItem('fontSize');
+      if (savedFontSize) {
+        document.documentElement.style.fontSize = savedFontSize + 'px';
       }
     });
   </script>
