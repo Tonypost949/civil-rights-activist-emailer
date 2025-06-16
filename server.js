@@ -18,8 +18,6 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-const OpenAI = require('openai');
-
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -53,13 +51,13 @@ app.post('/api/send-email', async (req, res) => {
     // Use OpenAI to rewrite the message
     const prompt = `Rewrite the following abuse description in a formal demand letter style:\n\n${description}`;
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 500,
     });
 
-    const rewrittenMessage = completion.data.choices[0].message.content.trim();
+    const rewrittenMessage = completion.choices[0].message.content.trim();
 
     // Compose email content
     const mailOptions = {
