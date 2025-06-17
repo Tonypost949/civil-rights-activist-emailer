@@ -1,0 +1,67 @@
+{
+  "origins": [],
+  "rules": [
+    {
+      "if": [
+        {
+          "==": [
+            {
+              "request": "path"
+            },
+            "/:path*"
+          ]
+        },
+        {
+          "headers": {
+            "set_request_headers": {
+              "+x-cloud-functions-hint": "app"
+            }
+          },
+          "origin": {
+            "set_origin": "edgio_serverless"
+          }
+        }
+      ]
+    },
+    {
+      "if": [
+        {
+          "=~": [
+            {
+              "request.header": "host"
+            },
+            "\\.edgio\\.link|\\.edgio-perma\\.link"
+          ]
+        },
+        {
+          "headers": {
+            "add_response_headers": {
+              "x-robots-tag": "nofollow, noindex"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "response": {
+        "compress_content_types": [
+          "text/html",
+          "text/css",
+          "text/xml",
+          "text/plain",
+          "text/javascript",
+          "application/javascript",
+          "application/x-javascript",
+          "application/json",
+          "application/xml",
+          "image/svg+xml",
+          "font/otf",
+          "font/ttf",
+          "font/woff",
+          "font/woff2"
+        ]
+      },
+      "comment": "Compress static assets"
+    }
+  ]
+}

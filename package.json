@@ -1,15 +1,18 @@
 {
-  "name": "civil-rights-activist-emailer",
-  "version": "1.0.0",
-  "main": "server.js",
   "scripts": {
+    "edgio:dev": "edgio dev",
+    "edgio:build": "edgio build",
+    "edgio:deploy": "edgio deploy",
     "start": "node server.js",
     "test": "jest"
   },
+  "name": "civil-rights-activist-emailer",
+  "version": "1.0.0",
+  "main": "server.js",
   "dependencies": {
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-"csurf": "^1.11.0",
+    "csurf": "^1.11.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
@@ -23,6 +26,10 @@
     "winston": "^3.11.0"
   },
   "devDependencies": {
+    "@edgio/cli": "^7.13.13",
+    "@edgio/connectors": "^7.13.13",
+    "@edgio/core": "^7.13.13",
+    "@edgio/prefetch": "^7.13.13",
     "jest": "^30.0.0"
   },
   "overrides": {
