@@ -731,7 +731,30 @@
             <span id="previewText">🔍 Preview Demand Letter</span>
             <span class="loading-spinner" id="previewSpinner" style="display: none;"></span>
           </button>
-        </form>
+</form>
+
+      <!-- Preview Modal -->
+      <div id="previewModal" class="modal" aria-hidden="true" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle" style="background:white; margin:5% auto; padding:1em; width:90%; max-width:600px; border-radius:8px; position:relative;">
+          <h2 id="modalTitle">Email Preview</h2>
+          <div>
+            <strong>Subject:</strong> <span id="previewSubject"></span>
+          </div>
+          <div id="previewBody" style="white-space: pre-wrap; margin-top:1em;"></div>
+          <h3 style="margin-top:1em;">Recipients (<span id="previewCount"></span>):</h3>
+          <ul id="previewRecipients" style="max-height:150px; overflow:auto; list-style:none; padding-left:0;">
+          </ul>
+          <div class="edit-section">
+            <label for="additionalInfo">Add more info to rewrite:</label>
+            <textarea id="additionalInfo" class="edit-textarea" placeholder="Additional details..."></textarea>
+            <button type="button" class="btn btn-secondary" id="regenerateBtn">Regenerate</button>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-primary" id="sendBtn">Send Email</button>
+            <button type="button" class="btn btn-secondary" id="closePreviewBtn">Close</button>
+          </div>
+        </div>
+      </div>
       </div>
 
       <div id="responseMessage" role="alert" aria-live="assertive" aria-atomic="true"></div>
@@ -1346,6 +1369,102 @@
         document.documentElement.style.fontSize = savedFontSize + 'px';
       }
     });
+  </script>
+
+  <script>
+    // Helper to fetch and show recipients on checkbox change
+    document.querySelectorAll('input[name="contactTypes"]').forEach(cb => {
+      cb.addEventListener('change', async () => {
+        const selected = Array.from(document.querySelectorAll('input[name="contactTypes"]:checked')).map(i => i.value);
+        if (selected.length) {
+          const res = await fetch('/api/recipients', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ contactTypes: selected })
+          });
+          const data = await res.json();
+          const previewDiv = document.getElementById('contactPreview');
+          previewDiv.textContent = `${data.totalCount} recipients selected.`;
+        }
+      });
+    });
+
+    // Preview flow
+    document.getElementById('previewBtn').addEventListener('click', async () => {
+      const form = document.getElementById('contactForm');
+      const formData = new FormData(form);
+      const payload = {
+        email: formData.get('email'),
+        violationType: formData.get('violationType'),
+        urgency: formData.get('urgency'),
+        contactTypes: formData.getAll('contactTypes'),
+        description: formData.get('description')
+      };
+      const res = await fetch('/api/preview', {
+        method: 'POST', headers: {'Content-Type':'application/json', 'CSRF-Token': window.csrfToken},
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      document.getElementById('previewSubject').textContent = data.subject;
+      document.getElementById('previewBody').textContent = data.letter;
+      const list = document.getElementById('previewRecipients'); list.innerHTML = '';
+      data.recipients.forEach(r => {
+        const li = document.createElement('li');
+        li.textContent = `${r.name} <${r.email}> (${r.organization})`;
+        list.appendChild(li);
+      });
+      document.getElementById('previewCount').textContent = data.totalRecipients;
+      document.getElementById('previewModal').style.display = 'block';
+    });
+
+    // Regenerate in modal
+    document.getElementById('regenerateBtn').addEventListener('click', async () => {
+      const original = document.getElementById('previewBody').textContent;
+      const additional = document.getElementById('additionalInfo').value;
+      const violationType = document.querySelector('#violationType').value;
+      const urgency = document.querySelector('input[name="urgency"]:checked')?.value;
+      const res = await fetch('/api/rewrite', {
+        method: 'POST', headers: {'Content-Type':'application/json', 'CSRF-Token': window.csrfToken},
+        body: JSON.stringify({ originalLetter: original, additionalInfo: additional, violationType, urgency })
+      });
+      const data = await res.json();
+      document.getElementById('previewBody').textContent = data.rewrittenLetter;
+    });
+
+    // Close modal
+    document.getElementById('closePreviewBtn').addEventListener('click', () => {
+      document.getElementById('previewModal').style.display = 'none';
+    });
+
+    // Send email from modal
+    document.getElementById('sendBtn').addEventListener('click', async () => {
+      // Simply submit form to send endpoint
+      const form = document.getElementById('contactForm');
+      const formData = new FormData(form);
+      const payload = {}
+      formData.forEach((v, k) => {
+        if (payload[k]) {
+          payload[k] = Array.isArray(payload[k]) ? payload[k].concat(v) : [payload[k], v];
+        } else payload[k] = v;
+      });
+      const res = await fetch('/api/send-email', {
+        method: 'POST', headers: {'Content-Type':'application/json', 'CSRF-Token': window.csrfToken},
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        alert('Email(s) sent successfully.');
+        document.getElementById('previewModal').style.display = 'none';
+        form.reset();
+      } else {
+        alert('Failed to send email.');
+      }
+    });
+
+    // Fetch CSRF token at startup
+    (async () => {
+      const res = await fetch('/api/csrf-token');
+      const data = await res.json();
+      window.csrfToken = data.csrfToken;
+    })();
   </script>
 </body>
 </html>
