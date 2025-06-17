@@ -9,7 +9,7 @@
   "dependencies": {
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "csurf": "^1.11.0",
+"csurf": "^1.11.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
@@ -24,5 +24,8 @@
   },
   "devDependencies": {
     "jest": "^30.0.0"
+  },
+  "overrides": {
+    "cookie": "^0.7.0"
   }
 }
